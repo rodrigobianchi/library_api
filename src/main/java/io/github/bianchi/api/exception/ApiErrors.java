@@ -2,6 +2,7 @@ package io.github.bianchi.api.exception;
 
 import io.github.bianchi.exception.BusinessException;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,6 +19,10 @@ public class ApiErrors {
 
     public ApiErrors(BusinessException exception) {
         this.errors = Arrays.asList(exception.getMessage());
+    }
+
+    public ApiErrors(ResponseStatusException exception) {
+        this.errors = Arrays.asList(exception.getReason());
     }
 
     public List<String> getErrors() {
