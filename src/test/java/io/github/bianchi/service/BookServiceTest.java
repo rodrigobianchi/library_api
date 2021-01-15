@@ -64,7 +64,7 @@ public class BookServiceTest {
 
     @Test
     @DisplayName("Should Not Save Book With Duplicated Isbn")
-    public void shouldNotSaveBookWithDuplicatedIsbn() throws Exception {
+    public void shouldNotSaveBookWithDuplicatedIsbn() {
         //cenary
         Book book = createNewBook();
 
@@ -184,6 +184,24 @@ public class BookServiceTest {
         assertThat(result.getContent()).isEqualTo(Arrays.asList(book));
         assertThat(result.getPageable().getPageNumber()).isEqualTo(0);
         assertThat(result.getPageable().getPageSize()).isEqualTo(10);
+    }
+
+    @Test
+    @DisplayName("Get Book By Isbn")
+    public void getBookByIsbnTest() {
+        String isbn = "123";
+        Book mockBook = createNewBook();
+
+        Mockito.when(repository.findByIsbn(isbn)).thenReturn(Optional.of(mockBook));
+
+        Optional<Book> book = service.getBookByIsbn(isbn);
+
+        assertThat(book.isPresent()).isTrue();
+        assertThat(book.get().getTitle()).isEqualTo(mockBook.getTitle());
+        assertThat(book.get().getAuthor()).isEqualTo(mockBook.getAuthor());
+        assertThat(book.get().getIsbn()).isEqualTo(mockBook.getIsbn());
+
+        Mockito.verify(repository, Mockito.timeout(1)).findByIsbn(isbn);
     }
 
     private Book createNewBook() {
