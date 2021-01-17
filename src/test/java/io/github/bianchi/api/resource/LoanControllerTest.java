@@ -1,7 +1,10 @@
 package io.github.bianchi.api.resource;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.bianchi.api.dto.LoanDTO;
+import io.github.bianchi.api.dto.LoanFilterDTO;
+import io.github.bianchi.api.dto.ReturnedLoanDTO;
 import io.github.bianchi.exception.BusinessException;
 import io.github.bianchi.model.entity.Book;
 import io.github.bianchi.model.entity.Loan;
@@ -16,6 +19,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -24,6 +30,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.Optional;
 
 import static org.hamcrest.Matchers.hasSize;
@@ -108,6 +115,67 @@ public class LoanControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("errors", hasSize(1)))
                 .andExpect(jsonPath("errors[0]").value(mensagemErro));
+    }
+
+    @Test
+    @DisplayName("Update property returned of Book entity")
+    public void updateBookReturnedTest() throws Exception {
+        ReturnedLoanDTO dto = ReturnedLoanDTO.builder().returned(true).build();
+        String json = new ObjectMapper().writeValueAsString(dto);
+        Loan loan = createNewLoan();
+
+        BDDMockito.given(service.getById(Mockito.anyLong())).willReturn(Optional.of(loan));
+
+        mvc.perform(
+                MockMvcRequestBuilders.patch(LOAN_API.concat("/1"))
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json)
+        ).andExpect(status().isOk());
+
+        Mockito.verify(service, Mockito.times(1)).update(loan);
+    }
+
+    @Test
+    @DisplayName("Update property returned of Book entity inexistent")
+    public void updateBookReturnedInexistentTest() throws Exception {
+        ReturnedLoanDTO dto = ReturnedLoanDTO.builder().returned(true).build();
+        String json = new ObjectMapper().writeValueAsString(dto);
+        Loan loan = createNewLoan();
+
+        BDDMockito.given(service.getById(Mockito.anyLong())).willReturn(Optional.empty());
+
+        mvc.perform(
+                MockMvcRequestBuilders.patch(LOAN_API.concat("/1"))
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json)
+        ).andExpect(status().isNotFound());
+
+        Mockito.verify(service, Mockito.never()).update(loan);
+    }
+
+    @Test
+    @DisplayName("Find Loans")
+    public void findLoanTest() throws Exception {
+        Long id = 1L;
+        Loan searchedLoan = createNewLoan();
+        searchedLoan.setId(id);
+
+        BDDMockito.given(service.find(Mockito.any(LoanFilterDTO.class), Mockito.any(Pageable.class)))
+                .willReturn(new PageImpl<Loan>(Arrays.asList(searchedLoan), PageRequest.of(0, 10), 1));
+
+        String queryString = String.format("?isbn=%s&customer=%s&page=0&size=10", searchedLoan.getBook().getIsbn(),
+                searchedLoan.getCustomer());
+
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get(LOAN_API.concat(queryString))
+                .accept(MediaType.APPLICATION_JSON);
+
+        mvc.perform(request).andExpect(status().isOk())
+                .andExpect(jsonPath("content", hasSize(1)))
+                .andExpect(jsonPath("totalElements").value(1))
+                .andExpect(jsonPath("pageable.pageSize").value(10))
+                .andExpect(jsonPath("pageable.pageNumber").value(0));
     }
 
     private Loan createNewLoan() {

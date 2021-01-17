@@ -74,14 +74,13 @@ public class BookController {
     }
 
     @GetMapping
-    public Page find(BookDTO dto, Pageable pageRequest) {
+    public Page find(BookDTO dto, Pageable pageable) {
         Book filter = modelMapper.map(dto, Book.class);
-        service.find(filter, pageRequest);
-        Page<Book> result = service.find(filter, pageRequest);
+        Page<Book> result = service.find(filter, pageable);
         List<BookDTO> list = result.getContent().stream().map(
                 entity -> modelMapper.map(entity, BookDTO.class))
                 .collect(Collectors.toList());
-        return new PageImpl<BookDTO>(list, pageRequest, result.getTotalElements());
+        return new PageImpl<BookDTO>(list, pageable, result.getTotalElements());
     }
 
 }
