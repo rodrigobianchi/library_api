@@ -15,6 +15,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -60,6 +61,20 @@ public class LoanRepositoryTest {
         assertThat(result.getPageable().getPageSize()).isEqualTo(10);
         assertThat(result.getPageable().getPageNumber()).isEqualTo(0);
         assertThat(result.getTotalElements()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("Verify If Loan Late And Book Not Returned")
+    public void findByLoanDateLessThanAndNotReturnedTest() {
+        Book book = createNewBook();
+        Book savedBook = entityManager.persist(book);
+
+        Loan loan = Loan.builder().customer("Bianchi").book(savedBook).loanDate(LocalDate.now().minusDays(5)).build();
+        entityManager.persist(loan);
+
+        List<Loan> result = repository.findByLoanDateLessThanAndNotReturned(LocalDate.now().minusDays(4));
+
+        assertThat(result).hasSize(1).contains(loan);
     }
 
     private Book createNewBook() {

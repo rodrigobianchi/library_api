@@ -1,8 +1,12 @@
 package io.github.bianchi.api.resource;
 
 import io.github.bianchi.api.dto.BookDTO;
+import io.github.bianchi.api.dto.LoanDTO;
 import io.github.bianchi.model.entity.Book;
+import io.github.bianchi.model.entity.Loan;
 import io.github.bianchi.service.BookService;
+import io.github.bianchi.service.LoanService;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -17,15 +21,12 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/books")
+@RequiredArgsConstructor
 public class BookController {
 
-    private BookService service;
-    private ModelMapper modelMapper;
-
-    public BookController(BookService service, ModelMapper modelMapper) {
-        this.service = service;
-        this.modelMapper = modelMapper;
-    }
+    private final BookService service;
+    private final ModelMapper modelMapper;
+    private final LoanService loanService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -81,6 +82,21 @@ public class BookController {
                 entity -> modelMapper.map(entity, BookDTO.class))
                 .collect(Collectors.toList());
         return new PageImpl<BookDTO>(list, pageable, result.getTotalElements());
+    }
+
+    @GetMapping("{id}/loans")
+    public Page<LoanDTO> loansByBook(@PathVariable Long id, Pageable pageable) {
+        Book book = service.getById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        Page<Loan> result = loanService.getLoansByBook(book, pageable);
+        List<LoanDTO> list = result.getContent().stream().map(entity -> {
+            Book loanBook = entity.getBook();
+            BookDTO bookDTO = modelMapper.map(loanBook, BookDTO.class);
+            LoanDTO loanDTO = modelMapper.map(entity, LoanDTO.class);
+            loanDTO.setBook(bookDTO);
+            return loanDTO;
+        }).collect(Collectors.toList());
+
+        return new PageImpl<LoanDTO>(list, pageable, result.getTotalElements());
     }
 
 }

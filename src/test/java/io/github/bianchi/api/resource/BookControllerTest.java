@@ -5,6 +5,7 @@ import io.github.bianchi.api.dto.BookDTO;
 import io.github.bianchi.exception.BusinessException;
 import io.github.bianchi.model.entity.Book;
 import io.github.bianchi.service.BookService;
+import io.github.bianchi.service.LoanService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,6 +45,9 @@ public class BookControllerTest {
 
     @MockBean
     BookService service;
+
+    @MockBean
+    LoanService loanService;
 
     @Test
     @DisplayName("Create Book Success")

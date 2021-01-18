@@ -1,6 +1,5 @@
 package io.github.bianchi.api.resource;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.bianchi.api.dto.LoanDTO;
 import io.github.bianchi.api.dto.LoanFilterDTO;
@@ -179,11 +178,12 @@ public class LoanControllerTest {
     }
 
     private Loan createNewLoan() {
-        return Loan.builder().id(1L).customer("Bianchi").book(createNewBook()).loanDate(LocalDate.now()).build();
+        return Loan.builder().id(1L).customer("Bianchi").customerEmail("bianchi@gmail.com").book(createNewBook())
+                .loanDate(LocalDate.now()).build();
     }
 
     private LoanDTO createNewLoanDTO() {
-        return LoanDTO.builder().isbn("123").customer("Bianchi").build();
+        return LoanDTO.builder().isbn("123").customerEmail("bianchi@gmail.com").customer("Bianchi").build();
     }
 
     private Book createNewBook() {

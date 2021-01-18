@@ -32,4 +32,7 @@ public class Loan {
 
     @Column
     private Boolean returned;
+
+    @Column
+    private String customerEmail;
 }

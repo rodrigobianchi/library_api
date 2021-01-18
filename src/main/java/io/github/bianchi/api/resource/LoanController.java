@@ -8,6 +8,7 @@ import io.github.bianchi.model.entity.Book;
 import io.github.bianchi.model.entity.Loan;
 import io.github.bianchi.service.BookService;
 import io.github.bianchi.service.LoanService;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -22,17 +23,12 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/loans")
+@RequiredArgsConstructor
 public class LoanController {
 
-    private BookService bookService;
-    private LoanService service;
-    private ModelMapper modelMapper;
-
-    public LoanController(LoanService service, BookService bookService, ModelMapper modelMapper) {
-        this.service = service;
-        this.bookService = bookService;
-        this.modelMapper = modelMapper;
-    }
+    private final BookService bookService;
+    private final LoanService service;
+    private final ModelMapper modelMapper;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
